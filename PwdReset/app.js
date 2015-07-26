@@ -44,12 +44,7 @@ app.use('/users', users);
 
 // Routes
 app.get('/', function(req, res) {
-  res.render('index', {
-    title: 'Express'
-  });
-});
-
-app.get('/', function(req, res) {
+  console.log('REQ USER: ' + req.user);
   res.render('index', {
     title: 'Express',
     user: req.user
@@ -70,7 +65,7 @@ app.post('/login', function(req, res, next) {
     }
     req.login(user, function(err) {
       if (err) return next(err);
-      return res.redirect('/users/' + req.user.id);
+      return res.redirect('/');
     });
   })(req, res, next);
 });

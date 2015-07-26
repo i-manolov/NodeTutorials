@@ -13,11 +13,9 @@ module.exports = function(sequelize, DataTypes) {
           console.log('TRYIIING');
         },
         comparePassword: function(candidatePassword, cb) {
-          console.log("COMPARING");
           var user = this;
           bcrypt.compare(candidatePassword, user.get('password'), function(err, isMatch) {
             if (err) return cb(err);
-            console.log('ismatch? ' + isMatch);
             cb(null, isMatch);
           });
         }
