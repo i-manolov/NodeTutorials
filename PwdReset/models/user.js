@@ -5,7 +5,8 @@ var bcrypt = require('bcrypt-nodejs');
 module.exports = function(sequelize, DataTypes) {
   var User = sequelize.define('User', {
     username: DataTypes.STRING,
-    password: DataTypes.STRING
+    password: DataTypes.STRING,
+    email: DataTypes.STRING
   }, {
     hooks: {
       beforeCreate: hashPassword,
@@ -20,8 +21,9 @@ module.exports = function(sequelize, DataTypes) {
   }, {
     instanceMethods: {
       comparePassword: function(candidatePassword, cb) {
+        console.log("COMPARING");
         var user = this;
-        bcrypt.compare(candidatePassword, user.getDataValue('password'), function(err, isMatch) {
+        bcrypt.compare(candidatePassword, user.get('password'), function(err, isMatch) {
           if (err) return cb(err);
           cb(null, isMatch);
         });
