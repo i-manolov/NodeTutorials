@@ -9,9 +9,6 @@ module.exports = function(sequelize, DataTypes) {
       email: DataTypes.STRING
     }, {
       instanceMethods: {
-        tryMe: function () {
-          console.log('TRYIIING');
-        },
         comparePassword: function(candidatePassword, cb) {
           var user = this;
           bcrypt.compare(candidatePassword, user.get('password'), function(err, isMatch) {
@@ -29,18 +26,7 @@ module.exports = function(sequelize, DataTypes) {
           User.hasMany(models.PasswordReset, {foreignKey: 'userId'});
         }
       }
-    } //, {
-    // instanceMethods: {
-    //   comparePassword: function(candidatePassword, cb) {
-    //     console.log("COMPARING");
-    //     var user = this;
-    //     bcrypt.compare(candidatePassword, user.get('password'), function(err, isMatch) {
-    //       if (err) return cb(err);
-    //       cb(null, isMatch);
-    //     });
-    //   }
-    // }
-    //}
+    } 
   );
 
   return User;

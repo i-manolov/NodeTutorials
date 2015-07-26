@@ -48,14 +48,15 @@ module.exports = function(passport) {
 
   router.post('/signup', function(req, res, next) {
     User.create({
-      username: 'ivan13',
-      password: 'Welcome23',
-      email: 'test23123@test.com'
+      username: req.body.username,
+      password: req.body.password,
+      email: req.body.email
     }).then(function(user) {
       req.logIn(user, function(err) {
         res.redirect('/login');
       });
     }).catch(function(err) {
+      console.log('in errrrr');
       return next(err);
     });
   });
@@ -139,10 +140,10 @@ module.exports = function(passport) {
         return res.redirect('/forgot');
       }
 
-      User.update({ password: req.body.password }, { where: { id: pwdReset.userId }}).then(function (user){
-        req.logIn(user, function(err) {
-          next(err, user);
-        });
+      User.update({ password: req.body.password }, { where: { id: pwdReset.userId }, individualHooks: true}).then(function (user){
+        PasswordReset.destroy({where: {id: pwdReset.id}});
+        req.flash('success', 'Password reset was successful');
+        res.redirect('/login');
       });
     }).catch(function (err) {
       return next(err);
