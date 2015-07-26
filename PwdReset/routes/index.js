@@ -91,7 +91,6 @@ module.exports = function(passport) {
           expirationDate: Date.now() + 3600000,
           userId: user.id
         }).then(function(pwdReset) {
-          console.log('in mailer');
           var transporter  = nodemailer.createTransport(smtpTransport({
             service: 'SendGrid',
             auth: {
@@ -110,11 +109,13 @@ module.exports = function(passport) {
           };
           transporter.sendMail(mailOptions, function(err) {
             req.flash('info', 'An e-mail has been sent to ' + user.email + ' with further instructions.');
-            next(err, 'done');
+            return res.redirect('/forgot');
           });
         });
       });
-    })
+    }).catch(function (err) {
+      return next(err);
+    });
   });
 
   return router;
