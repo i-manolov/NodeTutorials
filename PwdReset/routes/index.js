@@ -118,5 +118,21 @@ module.exports = function(passport) {
     });
   });
 
+  router.get('/reset/:token', function(req, res, next) {
+    PasswordReset.findOne({ where: { token: req.param.token, expirationDate: {gt: new Date()}}}).then(function (pwdReset) {
+      if (!pwdReset) {
+        req.flash('error', 'Password reset token is invalid or has expired.');
+        return res.redirect('/forgot');
+      }
+      res.render('reset', {
+        user: req.user
+      });
+    });
+  });
+
+  router.post('/reset/:token', function (req, res, next) {
+    
+  });
+
   return router;
 }
