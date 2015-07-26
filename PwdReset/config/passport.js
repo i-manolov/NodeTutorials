@@ -15,19 +15,20 @@ module.exports = function(passport) {
         if (!user) return done(null, false, {
           message: 'Incorrect username'
         });
-          console.log('USER compare' + user.comparePassword);
         user.comparePassword(password, function(err, isMatch) {
           if (isMatch) {
             return done(null, user);
           } else {
+            console.log('else');
             return done(null, false, {
               message: 'Incorrect password.'
             });
           }
         });
+
       })
       .catch(function(err) {
-        console.log(err)
+        return console.log(err);
       });
   }));
   
@@ -37,7 +38,9 @@ module.exports = function(passport) {
 
   passport.deserializeUser(function(id, done) {
     User.findById(id).then(function (user) {
-      done(err, user);
+      done(null, user);
+    }).catch(function (err) {
+      done(err);
     });
   });
 

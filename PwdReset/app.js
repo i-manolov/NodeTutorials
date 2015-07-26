@@ -11,7 +11,7 @@ var async = require('async');
 var crypto = require('crypto');
 
 // var routes = require('./routes/index');
-// var users = require('./routes/users');
+var users = require('./routes/users');
 
 require ('./config/passport')(passport);
 
@@ -40,7 +40,7 @@ app.use(passport.session());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // app.use('/', routes)(passport);
-// app.use('/users', users);
+app.use('/users', users);
 
 // Routes
 app.get('/', function(req, res) {
@@ -64,18 +64,18 @@ app.get('/login', function(req, res) {
 
 app.post('/login', function(req, res, next) {
   passport.authenticate('local', function(err, user, info) {
-    if (err) return next(err)
+    if (err) return next(err);
     if (!user) {
       return res.redirect('/login')
     }
-    req.logIn(user, function(err) {
+    req.login(user, function(err) {
       if (err) return next(err);
-      return res.redirect('/');
+      return res.redirect('/users/' + req.user.id);
     });
   })(req, res, next);
 });
 
-app.post('/signup', function(req, res) {
+app.post('/signup', function(req, res, next) {
   var User = require('./models').User;
   User.create({
     username: 'ivan',
@@ -83,10 +83,10 @@ app.post('/signup', function(req, res) {
     email: 'ivan-manolov@hotmail.com'
   }).then(function(user) {
       req.logIn(user, function(err) {
-            res.redirect('/');
+            res.redirect('/login');
           });
-
-
+  }).catch (function(err) {
+    return next(err);
   });
 
   // user.save(function(err) {

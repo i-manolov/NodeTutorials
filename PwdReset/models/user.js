@@ -4,32 +4,48 @@ var bcrypt = require('bcrypt-nodejs');
 
 module.exports = function(sequelize, DataTypes) {
   var User = sequelize.define('User', {
-    username: DataTypes.STRING,
-    password: DataTypes.STRING,
-    email: DataTypes.STRING
-  }, {
-    hooks: {
-      beforeCreate: hashPassword,
-      beforeUpdate: hashPassword
-    }
-  }, {
-    classMethods: {
-      associate: function(models) {
-        User.hasMany(models.PasswordReset);
+      username: DataTypes.STRING,
+      password: DataTypes.STRING,
+      email: DataTypes.STRING
+    }, {
+      instanceMethods: {
+        tryMe: function () {
+          console.log('TRYIIING');
+        },
+        comparePassword: function(candidatePassword, cb) {
+          console.log("COMPARING");
+          var user = this;
+          bcrypt.compare(candidatePassword, user.get('password'), function(err, isMatch) {
+            if (err) return cb(err);
+            console.log('ismatch? ' + isMatch);
+            cb(null, isMatch);
+          });
+        }
       }
-    }
-  }, {
-    instanceMethods: {
-      comparePassword: function(candidatePassword, cb) {
-        console.log("COMPARING");
-        var user = this;
-        bcrypt.compare(candidatePassword, user.get('password'), function(err, isMatch) {
-          if (err) return cb(err);
-          cb(null, isMatch);
-        });
+    }, {
+      hooks: {
+        beforeCreate: hashPassword,
+        beforeUpdate: hashPassword
       }
-    }
-  });
+    }, {
+      classMethods: {
+        associate: function(models) {
+          User.hasMany(models.PasswordReset);
+        }
+      }
+    } //, {
+    // instanceMethods: {
+    //   comparePassword: function(candidatePassword, cb) {
+    //     console.log("COMPARING");
+    //     var user = this;
+    //     bcrypt.compare(candidatePassword, user.get('password'), function(err, isMatch) {
+    //       if (err) return cb(err);
+    //       cb(null, isMatch);
+    //     });
+    //   }
+    // }
+    //}
+  );
 
   return User;
 };

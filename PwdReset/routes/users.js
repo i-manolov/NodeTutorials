@@ -1,13 +1,19 @@
 var express = require('express');
 var router = express.Router();
-var db = require ('../models');
+var User = require ('../models').User;
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
-	db.User.create({username: 'ivan23', password: 'Welcome23'}).then(function (err, success) {
-		if (err) return res.send(err);
-		res.send('User saved');
+	User.create({username: 'ivan23', password: 'Welcome23', email:'ivan@ivan.com'}).then(function (user) {
+	}).catch(function (err) {
+		return next(err);
 	});
+});
+
+router.get('/:id', function (req, res, next) {
+	User.findById(req.params.id).then(function (user) {
+		res.send(user);
+	})
 });
 
 module.exports = router;
