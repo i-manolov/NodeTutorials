@@ -8,7 +8,8 @@ module.exports = function(sequelize, DataTypes) {
     password: DataTypes.STRING
   }, {
     hooks: {
-      beforeCreate: hashPassword
+      beforeCreate: hashPassword,
+      beforeUpdate: hashPassword
     }
   }, {
     classMethods: {
@@ -31,23 +32,6 @@ module.exports = function(sequelize, DataTypes) {
   return User;
 };
 
-
-// function hashPassword(user, next) {
-//   console.log(arguments);
-//   var SALT_FACTOR = 5;
-
-//   if (!user.changed('password')) return next;
-
-//   bcrypt.genSalt(SALT_FACTOR, function(err, salt) {
-//     if (err) return next(err);
-
-//     bcrypt.hash(user.password, salt, null, function(err, hash) {
-//       if (err) return next(err);
-//       user.password = hash;
-//       next();
-//     });
-//   });
-// }
 
 var hashPassword = function(instance, optons, next) {
   console.log(arguments);
