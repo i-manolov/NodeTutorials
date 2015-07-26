@@ -10,8 +10,10 @@ var passport = require('passport');
 var async = require('async');
 var crypto = require('crypto');
 
-var routes = require('./routes/index');
-var users = require('./routes/users');
+// var routes = require('./routes/index');
+// var users = require('./routes/users');
+
+require ('./config/passport')(passport);
 
 var app = express();
 
@@ -24,19 +26,88 @@ app.set('view engine', 'jade');
 app.set('port', process.argv[2] || 3000);
 app.use(logger('dev'));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({
+  extended: false
+}));
 app.use(cookieParser());
 app.use(session({
-    secret: 'my super duper secret key',
-    resave: true,
-    saveUninitialized: true
+  secret: 'my super duper secret key',
+  resave: true,
+  saveUninitialized: true
 }));
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', routes);
-app.use('/users', users);
+// app.use('/', routes)(passport);
+// app.use('/users', users);
+
+// Routes
+app.get('/', function(req, res) {
+  res.render('index', {
+    title: 'Express'
+  });
+});
+
+app.get('/', function(req, res) {
+  res.render('index', {
+    title: 'Express',
+    user: req.user
+  });
+});
+
+app.get('/login', function(req, res) {
+  res.render('login', {
+    user: req.user
+  });
+});
+
+app.post('/login', function(req, res, next) {
+  passport.authenticate('local', function(err, user, info) {
+    if (err) return next(err)
+    if (!user) {
+      return res.redirect('/login')
+    }
+    req.logIn(user, function(err) {
+      if (err) return next(err);
+      return res.redirect('/');
+    });
+  })(req, res, next);
+});
+
+app.post('/signup', function(req, res) {
+  var User = require('./models').User;
+  User.create({
+    username: 'ivan',
+    password: 'Welcome23',
+    email: 'ivan-manolov@hotmail.com'
+  }).then(function(user) {
+      req.logIn(user, function(err) {
+            res.redirect('/');
+          });
+
+
+  });
+
+  // user.save(function(err) {
+  //   req.logIn(user, function(err) {
+  //     res.redirect('/');
+  //   });
+  // });
+});
+
+app.get('/logout', function(req, res) {
+  req.logout();
+  res.redirect('/');
+});
+
+app.get('/signup', function(req, res) {
+  res.render('signup', {
+    user: req.user
+  });
+});
+
+
 
 app.listen(app.get('port'), function() {
   console.log('Express server listening on port ' + app.get('port'));

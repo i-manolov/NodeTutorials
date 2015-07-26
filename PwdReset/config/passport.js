@@ -15,6 +15,7 @@ module.exports = function(passport) {
         if (!user) return done(null, false, {
           message: 'Incorrect username'
         });
+          console.log('USER compare' + user.comparePassword);
         user.comparePassword(password, function(err, isMatch) {
           if (isMatch) {
             return done(null, user);
