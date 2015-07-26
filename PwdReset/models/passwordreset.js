@@ -9,6 +9,7 @@ module.exports = function(sequelize, DataTypes) {
         PasswordReset.belongsTo(models.User, {
           onDelete: "CASCADE",
           foreignKey: {
+            name: 'userId',
             allowNull: false
           }
         });

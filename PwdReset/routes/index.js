@@ -1,5 +1,12 @@
 var express = require('express');
-
+var Promise = require('bluebird');
+var cryptoRandomBytes = Promise.promisify(require('crypto').randomBytes);
+var flash = require('express-flash');
+var nodemailer = Promise.promisifyAll(require("nodemailer"));
+var smtpTransport = require('nodemailer-smtp-transport');
+var User = require('../models').User;
+var PasswordReset = require('../models').PasswordReset;
+var sendGridSecrets = require('../config/secrets').development.sendGrid;
 
 module.exports = function(passport) {
 
@@ -33,8 +40,13 @@ module.exports = function(passport) {
     })(req, res, next);
   });
 
+  router.get('/signup', function(req, res) {
+    res.render('signup', {
+      user: req.user
+    });
+  });
+
   router.post('/signup', function(req, res, next) {
-    var User = require('./models').User;
     User.create({
       username: 'ivan',
       password: 'Welcome23',
@@ -53,10 +65,56 @@ module.exports = function(passport) {
     res.redirect('/');
   });
 
-  router.get('/signup', function(req, res) {
-    res.render('signup', {
+  router.get('/forgot', function(req, res) {
+    res.render('forgot', {
       user: req.user
     });
+  });
+
+  router.post('/forgot', function(req, res, next) {
+
+    User.findOne({
+      where: {
+        email: req.body.email
+      }
+    }).then(function(user) {
+      if (!user) {
+        req.flash('error', 'No account with such email');
+        return res.redirect('/forgot');
+      }
+      return user;
+    }).then(function(user) {
+      cryptoRandomBytes(20).then(function(buf) {
+        var token = buf.toString('hex');
+        PasswordReset.create({
+          token: token,
+          expirationDate: Date.now() + 3600000,
+          userId: user.id
+        }).then(function(pwdReset) {
+          console.log('in mailer');
+          var transporter  = nodemailer.createTransport(smtpTransport({
+            service: 'SendGrid',
+            auth: {
+              user: sendGridSecrets.user,
+              pass: sendGridSecrets.pass
+            }
+          }));
+          var mailOptions = {
+            to: user.email,
+            from: 'passwordreset@demo.com',
+            subject: 'Node.js Password Reset',
+            text: 'You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n' +
+              'Please click on the following link, or paste this into your browser to complete the process:\n\n' +
+              'http://' + req.headers.host + '/reset/' + token + '\n\n' +
+              'If you did not request this, please ignore this email and your password will remain unchanged.\n'
+          };
+          transporter.sendMail(mailOptions, function(err) {
+            req.flash('info', 'An e-mail has been sent to ' + user.email + ' with further instructions.');
+            next(err, 'done');
+          });
+        });
+      });
+    })
   });
 
   return router;

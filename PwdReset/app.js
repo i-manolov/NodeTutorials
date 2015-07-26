@@ -5,10 +5,8 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var session = require('express-session')
-var nodemailer = require('nodemailer');
 var passport = require('passport');
-var async = require('async');
-var crypto = require('crypto');
+var flash = require('express-flash');
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
@@ -35,6 +33,7 @@ app.use(session({
   resave: true,
   saveUninitialized: true
 }));
+app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(express.static(path.join(__dirname, 'public')));
