@@ -19,16 +19,14 @@ module.exports = function(sequelize, DataTypes) {
             cb(null, isMatch);
           });
         }
-      }
-    }, {
+      },
       hooks: {
         beforeCreate: hashPassword,
         beforeUpdate: hashPassword
-      }
-    }, {
+      },
       classMethods: {
         associate: function(models) {
-          User.hasMany(models.PasswordReset);
+          User.hasMany(models.PasswordReset, {foreignKey: 'userId'});
         }
       }
     } //, {
@@ -52,6 +50,9 @@ module.exports = function(sequelize, DataTypes) {
 var hashPassword = function(instance, optons, next) {
   console.log(arguments);
   var SALT_FACTOR = 5;
+
+  console.log('in hook');
+  console.log('PWD CHANGED? ' + instance.changed('password'));
 
   if (!instance.changed('password')) return next();
 

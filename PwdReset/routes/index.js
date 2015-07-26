@@ -48,9 +48,9 @@ module.exports = function(passport) {
 
   router.post('/signup', function(req, res, next) {
     User.create({
-      username: 'ivan',
+      username: 'ivan13',
       password: 'Welcome23',
-      email: 'ivan-manolov@hotmail.com'
+      email: 'test23123@test.com'
     }).then(function(user) {
       req.logIn(user, function(err) {
         res.redirect('/login');
@@ -119,7 +119,7 @@ module.exports = function(passport) {
   });
 
   router.get('/reset/:token', function(req, res, next) {
-    PasswordReset.findOne({ where: { token: req.param.token, expirationDate: {gt: new Date()}}}).then(function (pwdReset) {
+    PasswordReset.findOne({ where: { token: req.params.token, expirationDate: {gt: new Date()}}}).then(function (pwdReset) {
       if (!pwdReset) {
         req.flash('error', 'Password reset token is invalid or has expired.');
         return res.redirect('/forgot');
@@ -127,11 +127,26 @@ module.exports = function(passport) {
       res.render('reset', {
         user: req.user
       });
+    }).catch(function (err) {
+      return next(err);
     });
   });
 
   router.post('/reset/:token', function (req, res, next) {
-    
+    PasswordReset.findOne({ where: { token: req.params.token, expirationDate: {gt: new Date()}}, include: [{model: User}]}).then(function (pwdReset) {
+      if (!pwdReset) {
+        req.flash('error', 'Password reset token is invalid or has expired.');
+        return res.redirect('/forgot');
+      }
+
+      User.update({ password: req.body.password }, { where: { id: pwdReset.userId }}).then(function (user){
+        req.logIn(user, function(err) {
+          next(err, user);
+        });
+      });
+    }).catch(function (err) {
+      return next(err);
+    });
   });
 
   return router;
